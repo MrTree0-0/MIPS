@@ -13,13 +13,12 @@ int main(int agrc, char* agrv[]) {
     std::ios::sync_with_stdio(false);
     std::cin.tie(0);
     std::cout.tie(0);
-    std::ifstream in;
+    std::ifstream in(agrv[1]);
     CPU cpu;
     Memory mem;
-    std::string filename = agrv[1]; /*"11.s"*/;
+    //std::string filename = agrv[1]; /*"11.s"*/;
     std::vector<ScannerToken> text;//每一句话和其在vec中的位置
     std::map<std::string, int> label;//每一个label的对应vector的位置
-    in.open(filename);
     int cnt = 0;//第几句push到vector中了
     int main_num;
     int DataOrText;
