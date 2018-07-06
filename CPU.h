@@ -12,93 +12,93 @@ class CPU{
     transfer trans;
 
   public:
-    void ADD(int Re, int R1, int R2, int Imm);
+    inline void ADD(int Re, int R1, int R2, int Imm);
 
-    void ADDU(int Re, int R1, int R2, int Imm);
+    inline void ADDU(int Re, int R1, int R2, int Imm);
 
-    void ADDIU(int Re, int R1, int R2, int Imm);
+    inline void ADDIU(int Re, int R1, int R2, int Imm);
 
-    void SUB(int Re, int R1, int R2, int Imm);
+    inline void SUB(int Re, int R1, int R2, int Imm);
 
-    void SUBU(int Re, int R1, int R2, int Imm);
+    inline void SUBU(int Re, int R1, int R2, int Imm);
 
-    void MUL(int Re, int R1, int R2, int Imm);
+    inline void MUL(int Re, int R1, int R2, int Imm);
 
-    void MULU(int Re, int R1, int R2, int Imm);
+    inline void MULU(int Re, int R1, int R2, int Imm);
 
-    void MUL(int R1, int R2, int Imm);
+    inline void MUL(int R1, int R2, int Imm);
 
-    void MULU(int R1, int R2, int Imm);
+    inline void MULU(int R1, int R2, int Imm);
 
-    void DIV(int Re, int R1, int R2, int Imm);
+    inline void DIV(int Re, int R1, int R2, int Imm);
 
-    void DIVU(int Re, int R1, int R2, int Imm);
+    inline void DIVU(int Re, int R1, int R2, int Imm);
 
-    void DIV(int R1, int R2, int Imm);
+    inline void DIV(int R1, int R2, int Imm);
 
-    void DIVU(int R1, int R2, int Imm);
+    inline void DIVU(int R1, int R2, int Imm);
 
-    void XOR(int Re, int R1, int R2, int Imm);
+    inline void XOR(int Re, int R1, int R2, int Imm);
 
-    void XORU(int Re, int R1, int R2, int Imm);
+    inline void XORU(int Re, int R1, int R2, int Imm);
 
-    void NEG(int Re, int R1);
+    inline void NEG(int Re, int R1);
 
-    void NEGU(int Re, int R1);
+    inline void NEGU(int Re, int R1);
 
-    void REM(int Re, int R1, int R2, int Imm);
+    inline void REM(int Re, int R1, int R2, int Imm);
 
-    void REMU(int Re,int R1, int R2, int Imm);
+    inline void REMU(int Re,int R1, int R2, int Imm);
 
-    void LI(int Re, int Imm);
+    inline  void LI(int Re, int Imm);
 
-    void SEQ(int Re, int R1, int R2, int Imm);
+    inline void SEQ(int Re, int R1, int R2, int Imm);
 
-    void SGE(int Re, int R1, int R2, int Imm);
+    inline void SGE(int Re, int R1, int R2, int Imm);
 
-    void SGT(int Re, int R1, int R2, int Imm);
+    inline void SGT(int Re, int R1, int R2, int Imm);
 
-    void SLE(int Re, int R1, int R2, int Imm);
+    inline void SLE(int Re, int R1, int R2, int Imm);
 
-    void SLT(int Re, int R1, int R2, int Imm);
+    inline void SLT(int Re, int R1, int R2, int Imm);
 
-    void SNE(int Re, int R1, int R2, int Imm);
+    inline void SNE(int Re, int R1, int R2, int Imm);
 
-    void B(int Re);
+    inline void B(int Re);
 
-    void BEQ(int R1, int R2, int Imm, int Re);
+    inline void BEQ(int R1, int R2, int Imm, int Re);
 
-    void BNE(int R1, int R2, int Imm, int Re);
+    inline void BNE(int R1, int R2, int Imm, int Re);
 
-    void BGE(int R1, int R2, int Imm, int Re);
+    inline void BGE(int R1, int R2, int Imm, int Re);
 
-    void BLE(int R1, int R2, int Imm, int Re);
+    inline void BLE(int R1, int R2, int Imm, int Re);
 
-    void BGT(int R1, int R2, int Imm, int Re);
+    inline void BGT(int R1, int R2, int Imm, int Re);
 
-    void BLT(int R1, int R2, int Imm, int Re);
+    inline void BLT(int R1, int R2, int Imm, int Re);
 
-    void BEQZ(int R1, int Re);
+    inline void BEQZ(int R1, int Re);
 
-    void BNEZ(int R1, int Re);
+    inline void BNEZ(int R1, int Re);
 
-    void BLEZ(int R1, int Re);
+    inline void BLEZ(int R1, int Re);
 
-    void BGEZ(int R1, int Re);
+    inline void BGEZ(int R1, int Re);
 
-    void BGTZ(int R1, int Re);
+    inline void BGTZ(int R1, int Re);
 
-    void BLTZ(int R1, int Re);
+    inline void BLTZ(int R1, int Re);
 
-    void J(int Re);
+    inline void J(int Re);
 
-    void Jr(int R1);
+    inline void Jr(int R1);
 
-    void JAL(int Re);
+    inline void JAL(int Re);
 
-    void JALR(int R1);
+    inline void JALR(int R1);
 
-    void LA(int Re, int address);
+    inline void LA(int Re, int address);
 
     /*void LB(int R1, int R2, int Imm, int Re);
 
@@ -112,11 +112,11 @@ class CPU{
 
     void SW(int R1, int R2, int Imm, int Re);*/
 
-    void MOVE(int Re, int R1);
+    inline void MOVE(int Re, int R1);
 
-    void MFHI(int R1);
+    inline void MFHI(int R1);
 
-    void MFLO(int R1);
+    inline void MFLO(int R1);
 
     void NOP();
 
@@ -158,7 +158,6 @@ void CPU::get_start(int sp, int mainnum){
 void CPU::ADD(int Re, int R1, int R2, int Imm){
     if(R2 >= 0){
         cpu[Re] = cpu[R1] + cpu[R2];
-        //std::cout << cpu[Re] << std::endl;
     }
     else{
         cpu[Re] = cpu[R1] + Imm;
