@@ -13,6 +13,7 @@ class Memory{
 
     Memory(){
         mem = new unsigned char[1024 * 1024 * 4];
+        std::memset(mem, 0, 1024 * 1024 * 4 * sizeof(unsigned char));
         data_point = 0;
     }
 

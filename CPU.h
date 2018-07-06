@@ -8,7 +8,7 @@
 #include "transfer.h"
 class CPU{
   private:
-    int cpu[35];
+    int cpu[35] = {0};
     transfer trans;
 
   public:
