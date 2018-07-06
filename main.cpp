@@ -14,6 +14,7 @@ int main(int agrc, char* agrv[]) {
     std::cin.tie(0);
     std::cout.tie(0);
     std::ifstream in(agrv[1]);
+    transfer transfer1;
     CPU cpu;
     Memory mem;
     //std::string filename = agrv[1]; /*"11.s"*/;
@@ -23,7 +24,7 @@ int main(int agrc, char* agrv[]) {
     int main_num;
     int DataOrText;
     while(in.peek() != EOF){
-        parser(in, mem, text, label, cnt, DataOrText);
+        parser(in, mem, text, label, cnt, DataOrText, transfer1);
     }
 
     main_num = label["main"];

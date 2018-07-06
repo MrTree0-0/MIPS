@@ -39,8 +39,7 @@ int change_into_int(std::string str){
     }
     return re;
 }
-void parser(std::istream &is, Memory &mem, std::vector<ScannerToken> &vec, std::map<std::string, int> &map, int &cnt, int &DataOrText){
-    transfer reflect1;
+void parser(std::istream &is, Memory &mem, std::vector<ScannerToken> &vec, std::map<std::string, int> &map, int &cnt, int &DataOrText, transfer &reflect1){
     std::string head_word;
     is >> head_word;
     //std::cout << head_word << std::endl;
@@ -181,7 +180,7 @@ void parser(std::istream &is, Memory &mem, std::vector<ScannerToken> &vec, std::
         std::string Rdest, Rsrc1, Src2;
         is >> Rdest >> Rsrc1 >> Src2;
         ScannerToken st;
-        st.yuan = head_word + Rdest + Rsrc1 + Src2;
+        //st.yuan = head_word + Rdest + Rsrc1 + Src2;
         st.op = reflect1.trans(head_word);
         st.Re = reflect1.trans(leave_last(Rdest));
         st.R1 = reflect1.trans(leave_last(Rsrc1));
@@ -202,12 +201,12 @@ void parser(std::istream &is, Memory &mem, std::vector<ScannerToken> &vec, std::
         st.op = reflect1.trans(head_word);
         std::string R1, R2;
         is >> R1 >> R2;
-        st.yuan = head_word + R1 + R2;
+        //st.yuan = head_word + R1 + R2;
         int len2 = R2.length();
         if(R2[len2 - 1] == ','){
             std::string R3;
             is >> R3;
-            st.yuan = st.yuan + R3;
+            //st.yuan = st.yuan + R3;
             st.Re = reflect1.trans(leave_last(R1));
             st.R1 = reflect1.trans(leave_last(R2));
             if(R3[0] == '$'){
@@ -239,7 +238,7 @@ void parser(std::istream &is, Memory &mem, std::vector<ScannerToken> &vec, std::
         std::string Rdest, Rsrc;
         is >> Rdest >> Rsrc;
         ScannerToken st;
-        st.yuan = head_word + Rdest + Rsrc;
+        //st.yuan = head_word + Rdest + Rsrc;
         st.op = reflect1.trans(head_word);
         st.Re = reflect1.trans(leave_last(Rdest));
         st.R1 = reflect1.trans(Rsrc);
@@ -252,7 +251,7 @@ void parser(std::istream &is, Memory &mem, std::vector<ScannerToken> &vec, std::
         std::string Rsrc1, Src2, label;
         is >> Rsrc1 >> Src2 >> label;
         ScannerToken st;
-        st.yuan = head_word + Rsrc1 + Src2 + label;
+        //st.yuan = head_word + Rsrc1 + Src2 + label;
         st.op = reflect1.trans(head_word);
         st.R1 = reflect1.trans(leave_last(Rsrc1));
         if(Src2[0] == '$'){
@@ -273,7 +272,7 @@ void parser(std::istream &is, Memory &mem, std::vector<ScannerToken> &vec, std::
         std::string Rsrc, label;
         ScannerToken st;
         is >> Rsrc >> label;
-        st.yuan = head_word + Rsrc + label;
+        //st.yuan = head_word + Rsrc + label;
         st.op = reflect1.trans(head_word);
         st.R1 = reflect1.trans(leave_last(Rsrc));
         st.label = label;
@@ -286,7 +285,7 @@ void parser(std::istream &is, Memory &mem, std::vector<ScannerToken> &vec, std::
         std::string Rdest, Imm;
         is >> Rdest >> Imm;
         ScannerToken st;
-        st.yuan = head_word + Rdest + Imm;
+        //st.yuan = head_word + Rdest + Imm;
         st.op = reflect1.trans(head_word);
         st.Re = reflect1.trans(leave_last(Rdest));
         st.Imm = change_into_int(Imm);
@@ -299,7 +298,7 @@ void parser(std::istream &is, Memory &mem, std::vector<ScannerToken> &vec, std::
         ScannerToken st;
         st.op = reflect1.trans(head_word);
         is >> st.label;
-        st.yuan = head_word + st.label;
+        //st.yuan = head_word + st.label;
         st.line_num = cnt++;
         vec.push_back(st);
         return;
@@ -309,7 +308,7 @@ void parser(std::istream &is, Memory &mem, std::vector<ScannerToken> &vec, std::
         std::string Rrsc;
         is >> Rrsc;
         ScannerToken st;
-        st.yuan = head_word + Rrsc;
+        //st.yuan = head_word + Rrsc;
         st.op = reflect1.trans(head_word);
         st.R1 = reflect1.trans(Rrsc);
         st.line_num = cnt++;
@@ -321,7 +320,7 @@ void parser(std::istream &is, Memory &mem, std::vector<ScannerToken> &vec, std::
         std::string R, address;
         ScannerToken st;
         is >> R >> address;
-        st.yuan = head_word + R + address;
+        //st.yuan = head_word + R + address;
         st.op = reflect1.trans(head_word);
         st.R1 = reflect1.trans(leave_last(R));
         if(address[0] == '_'){
@@ -355,7 +354,7 @@ void parser(std::istream &is, Memory &mem, std::vector<ScannerToken> &vec, std::
     }
     if(head_word == "nop" || head_word == "syscall"){
         ScannerToken st;
-        st.yuan = head_word;
+        //st.yuan = head_word;
         head_word = change_into_larger(head_word);
         st.op = reflect1.trans(head_word);
         st.line_num = cnt++;

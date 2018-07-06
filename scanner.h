@@ -19,7 +19,7 @@ class ScannerToken{
     int line_num;
     int Re, R1, R2, Imm;
     std::string label;
-    std::string yuan;
+    //std::string yuan;
     int address;
 
   public:
@@ -31,7 +31,7 @@ class ScannerToken{
 
     ScannerToken(const ScannerToken &st):op(st.op), line_num(st.line_num), Re(st.Re), R1(st.R1), R2(st.R2), Imm(st.Imm), address(st.address){
         label = st.label;
-        yuan = st.yuan;
+        //yuan = st.yuan;
     }
 
     ScannerToken &operator=(const ScannerToken &st){
@@ -42,7 +42,7 @@ class ScannerToken{
         R1 = st.R1;
         R2 = st.R2;
         Imm = st.Imm;
-        yuan = st.yuan;
+        //yuan = st.yuan;
         label = st.label;
         address = st.address;
         return *this;
