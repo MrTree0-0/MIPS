@@ -498,18 +498,6 @@ void CPU::LA(int Re, int address){
     cpu[Re] = address;
 };
 
-/*void CPU::LB(int R1, int R2, int Imm, int Re);
-
-void CPU::LH(int R1, int R2, int Imm, int Re);
-
-void CPU::LW(int R1, int R2, int Imm, int Re);
-
-void CPU::SB(int R1, int R2, int Imm, int Re);
-
-void CPU::SH(int R1, int R2, int Imm, int Re);
-
-void CPU::SW(int R1, int R2, int Imm, int Re);*/
-
 void CPU::MOVE(int Re, int R1){
     cpu[Re] = cpu[R1];
 };
@@ -542,19 +530,14 @@ int CPU::SYSCALL(){
 };
 
 void CPU::Load_char(int Re, int num) {
-    //cpu[Re] = (int)ch;
     cpu[Re] = num;
 }
 
 void CPU::Load_halfword(int Re, int num) {
-    //cpu[Re] = (int)sh;
-    //memcpy(cpu + Re, &sh, sizeof(unsigned short));
     cpu[Re] = num;
 }
 
 void CPU::Load_word(int Re, int num) {
-    //cpu[Re] = (int)word;
-    //memcpy(cpu + Re, &word, sizeof(unsigned int));
     cpu[Re] = num;
 }
 

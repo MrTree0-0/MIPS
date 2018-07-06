@@ -33,7 +33,6 @@ class program{
 
     int get_address(){
         if(address == -1){
-            //std::cout << "yes";
             return dep->get_value(R2) + Imm;
         }
         else return address;
@@ -64,14 +63,11 @@ program::program(program &p):dep(p.dep),mem(p.mem), text(p.text), op(p.op), Re(p
 void program::IF(){
     int command_line;
     command_line = dep->getcommand();
-    //std::cout << command_line << std::endl;
     command = (*text)[command_line];
-    //std::cout << command.op << std::endl;
 }
 
 void program::ID(){
     op = command.op;
-    //std::cout << command.op << std::endl;
     now_line = command.line_num;
     Re = command.Re;
     R1 = command.R1;
@@ -209,13 +205,10 @@ void program::run(){
         EX();
         ID();
         IF();*/
-        //if(cnt > 50) break;
         cnt++;
         IF();
         ID();
-        //std::cout << now_line << std::endl;
         EX();
-        //dep->print();
         MA();
         WB();
     }

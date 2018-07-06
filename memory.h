@@ -28,7 +28,8 @@ class Memory{
         data_point += num;*/
         int left = num - (data_point % num);
         if(left % num == 0) return;
-        for(int i = 1; i <= num; i++) mem[data_point + i] = 0;
+        //for(int i = 1; i <= num; i++) mem[data_point + i] = 0;
+        std::memset(mem + data_point + 1, 0, num * sizeof(unsigned char));
         data_point += left;
     }
 
@@ -37,19 +38,19 @@ class Memory{
     }
 
     void ascii(const char* ch, int len){
-        //std::memcpy(mem + data_point, ch, len * sizeof(unsigned char));
-        for(int i = 0; i < len; i++){
+        std::memcpy(mem + data_point, ch, len * sizeof(unsigned char));
+        /*for(int i = 0; i < len; i++){
             mem[data_point + i] = ch[i];
-        }
+        }*/
         data_point += len;
     }
 
     void asciiz(const char* ch, int len){
         //std::cout << ch[0] << std::endl;
-        //std::memcpy(mem + data_point, ch, len * sizeof(unsigned char));
-        for(int i = 0; i < len; i++){
+        std::memcpy(mem + data_point, ch, len * sizeof(unsigned char));
+        /*for(int i = 0; i < len; i++){
             mem[data_point + i] = ch[i];
-        }
+        }*/
         data_point += len;
         mem[data_point++] = '\0';
     }
