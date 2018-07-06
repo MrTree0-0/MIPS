@@ -370,10 +370,6 @@ void parser(std::istream &is, Memory &mem, std::vector<ScannerToken> &vec, std::
         std::string label = leave_last(head_word);
         map[label] = cnt;
     }
-    //std::cout << label << std::endl;
-    //map.insert(std::pair<std::string, int>(label, cnt));
-    //if(label == "main") return cnt;
-    //return;
 }
 
 #endif //MIPS_PARSER_H

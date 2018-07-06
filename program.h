@@ -164,20 +164,20 @@ void program::EX(){
         case SYSCALL:
         {int judge = dep->SYSCALL();
             if(judge == 4){
-                int address = dep->get_value(tran.trans("$a0"));
+                int address = dep->get_value(4);
                 while(mem->mem[address] != '\0'){
                     std::cout << (char)mem->mem[address++];
                 }
                 //std::cout << '\0';
             } else
             if(judge == 9){
-                int len = dep->get_value(tran.trans("$a0"));
-                dep->LI(tran.trans("$v0"), mem->data_point);
+                int len = dep->get_value(4);
+                dep->LI(2, mem->data_point);
                 mem->data_point += len;
             }else
             if(judge == 8){
-                int len = dep->get_value(tran.trans("$a1"));
-                int address = dep->get_value(tran.trans("$a0"));
+                int len = dep->get_value(5);
+                int address = dep->get_value(4);
                 std::string str;
                 std::cin >> str;
                 for(int i = 0; i < len; i++){
@@ -198,14 +198,14 @@ void program::MA(){}
 void program::WB(){}
 
 void program::run(){
-    int cnt = 0;
+    //int cnt = 0;
     while(true){
         /*WB();
         MA();
         EX();
         ID();
         IF();*/
-        cnt++;
+        //cnt++;
         IF();
         ID();
         EX();

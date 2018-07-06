@@ -46,7 +46,6 @@ class Memory{
     }
 
     void asciiz(const char* ch, int len){
-        //std::cout << ch[0] << std::endl;
         std::memcpy(mem + data_point, ch, len * sizeof(unsigned char));
         /*for(int i = 0; i < len; i++){
             mem[data_point + i] = ch[i];

@@ -124,13 +124,13 @@ class CPU{
 
     int getcommand();
 
-    void get_start(int sp, int mainnum);
+    inline void get_start(int sp, int mainnum);
 
-    void Load_char(int Re, int num);
+    inline void Load_char(int Re, int num);
 
-    void Load_halfword(int Re, int num);
+    inline void Load_halfword(int Re, int num);
 
-    void Load_word(int Re, int num);
+    inline void Load_word(int Re, int num);
 
     int get_value(int Re);
 
@@ -147,12 +147,12 @@ class CPU{
 };
 
 int CPU::getcommand(){
-    return cpu[trans.trans("$pc")]++;
+    return cpu[34]++;
 }
 
 void CPU::get_start(int sp, int mainnum){
-    cpu[trans.trans("$sp")] = sp;
-    cpu[trans.trans("$pc")] = mainnum;
+    cpu[29] = sp;
+    cpu[34] = mainnum;
 }
 
 void CPU::ADD(int Re, int R1, int R2, int Imm){
@@ -211,8 +211,8 @@ void CPU::MUL(int R1, int R2, int Imm) {
     else{
         an = (long long)cpu[R1] * (long long)Imm;
     }
-    cpu[trans.trans("$lo")] = an & 0xffffffff;
-    cpu[trans.trans("$hi")] = (an >> 8) & 0xffffffff;
+    cpu[33] = an & 0xffffffff;
+    cpu[32] = (an >> 8) & 0xffffffff;
 }
 
 void CPU::MULU(int R1, int R2, int Imm) {
@@ -223,8 +223,8 @@ void CPU::MULU(int R1, int R2, int Imm) {
     else{
         an = (unsigned long long)cpu[R1] * (unsigned long long)Imm;
     }
-    cpu[trans.trans("$lo")] = an & 0xffffffff;
-    cpu[trans.trans("$hi")] = (an >> 8) & 0xffffffff;
+    cpu[33] = an & 0xffffffff;
+    cpu[32] = (an >> 8) & 0xffffffff;
 }
 
 void CPU::DIV(int Re, int R1, int R2, int Imm) {
@@ -247,23 +247,23 @@ void CPU::DIVU(int Re, int R1, int R2, int Imm){
 
 void CPU::DIV(int R1, int R2, int Imm){
     if(R2 >= 0){
-        cpu[trans.trans("$hi")] = cpu[R1] % cpu[R2];
-        cpu[trans.trans("$lo")] = cpu[R1] / cpu[R2];
+        cpu[32] = cpu[R1] % cpu[R2];
+        cpu[33] = cpu[R1] / cpu[R2];
     }
     else{
-        cpu[trans.trans("$hi")] = cpu[R1] % Imm;
-        cpu[trans.trans("$lo")] = cpu[R1] / Imm;
+        cpu[32] = cpu[R1] % Imm;
+        cpu[33] = cpu[R1] / Imm;
     }
 };
 
 void CPU::DIVU(int R1, int R2, int Imm){
     if(R2 >= 0){
-        cpu[trans.trans("$hi")] = (unsigned int)cpu[R1] % (unsigned int)cpu[R2];
-        cpu[trans.trans("$lo")] = (unsigned int)cpu[R1] / (unsigned int)cpu[R2];
+        cpu[32] = (unsigned int)cpu[R1] % (unsigned int)cpu[R2];
+        cpu[33] = (unsigned int)cpu[R1] / (unsigned int)cpu[R2];
     }
     else{
-        cpu[trans.trans("$hi")] = (unsigned int)cpu[R1] % (unsigned int)Imm;
-        cpu[trans.trans("$lo")] = (unsigned int)cpu[R1] / (unsigned int)Imm;
+        cpu[32] = (unsigned int)cpu[R1] % (unsigned int)Imm;
+        cpu[33] = (unsigned int)cpu[R1] / (unsigned int)Imm;
     }
 };
 
@@ -370,18 +370,18 @@ void CPU::SNE(int Re, int R1, int R2, int Imm){
 };
 
 void CPU::B(int Re){
-    cpu[trans.trans("$pc")] = Re;//b和j毛区别？
+    cpu[34] = Re;//b和j毛区别？
 };
 
 void CPU::BEQ(int R1, int R2, int Imm, int Re){
     if(R2 >= 0){
         if(cpu[R1] == cpu[R2]){
-            cpu[trans.trans("$pc")] = Re;
+            cpu[34] = Re;
         }
     }
     else{
         if(cpu[R1] == Imm){
-            cpu[trans.trans("$pc")] = Re;
+            cpu[34] = Re;
         }
     }
 };
@@ -389,12 +389,12 @@ void CPU::BEQ(int R1, int R2, int Imm, int Re){
 void CPU::BNE(int R1, int R2, int Imm, int Re){
     if(R2 >= 0){
         if(cpu[R1] != cpu[R2]){
-            cpu[trans.trans("$pc")] = Re;
+            cpu[34] = Re;
         }
     }
     else{
         if(cpu[R1] != Imm){
-            cpu[trans.trans("$pc")] = Re;
+            cpu[34] = Re;
         }
     }
 };
@@ -402,12 +402,12 @@ void CPU::BNE(int R1, int R2, int Imm, int Re){
 void CPU::BGE(int R1, int R2, int Imm, int Re){
     if(R2 >= 0){
         if(cpu[R1] >= cpu[R2]){
-            cpu[trans.trans("$pc")] = Re;
+            cpu[34] = Re;
         }
     }
     else{
         if(cpu[R1] >= Imm){
-            cpu[trans.trans("$pc")] = Re;
+            cpu[34] = Re;
         }
     }
 };
@@ -415,12 +415,12 @@ void CPU::BGE(int R1, int R2, int Imm, int Re){
 void CPU::BLE(int R1, int R2, int Imm, int Re){
     if(R2 >= 0){
         if(cpu[R1] <= cpu[R2]){
-            cpu[trans.trans("$pc")] = Re;
+            cpu[34] = Re;
         }
     }
     else{
         if(cpu[R1] <= Imm){
-            cpu[trans.trans("$pc")] = Re;
+            cpu[34] = Re;
         }
     }
 };
@@ -428,12 +428,12 @@ void CPU::BLE(int R1, int R2, int Imm, int Re){
 void CPU::BGT(int R1, int R2, int Imm, int Re){
     if(R2 >= 0){
         if(cpu[R1] > cpu[R2]){
-            cpu[trans.trans("$pc")] = Re;
+            cpu[34] = Re;
         }
     }
     else{
         if(cpu[R1] > Imm){
-            cpu[trans.trans("$pc")] = Re;
+            cpu[34] = Re;
         }
     }
 };
@@ -441,12 +441,12 @@ void CPU::BGT(int R1, int R2, int Imm, int Re){
 void CPU::BLT(int R1, int R2, int Imm, int Re){
     if(R2 >= 0){
         if(cpu[R1] < cpu[R2]){
-            cpu[trans.trans("$pc")] = Re;
+            cpu[34] = Re;
         }
     }
     else{
         if(cpu[R1] < Imm){
-            cpu[trans.trans("$pc")] = Re;
+            cpu[34] = Re;
         }
     }
 };
@@ -480,17 +480,17 @@ void CPU::J(int Re){
 };
 
 void CPU::Jr(int R1){
-    cpu[trans.trans("$pc")] = cpu[R1];
+    cpu[34] = cpu[R1];
 };
 
 void CPU::JAL(int Re){
-    cpu[trans.trans("$31")] = cpu[trans.trans("$pc")];
-    cpu[trans.trans("$pc")] = Re;
+    cpu[31] = cpu[34];
+    cpu[34] = Re;
 };
 
 void CPU::JALR(int R1){
-    cpu[trans.trans("$31")] = cpu[trans.trans("$pc")];
-    cpu[trans.trans("$pc")] = cpu[R1];
+    cpu[31] = cpu[34];
+    cpu[34] = cpu[R1];
 };
 
 void CPU::LA(int Re, int address){
@@ -502,11 +502,11 @@ void CPU::MOVE(int Re, int R1){
 };
 
 void CPU::MFHI(int R1){
-    cpu[R1] = cpu[trans.trans("$hi")];
+    cpu[R1] = cpu[32];
 };
 
 void CPU::MFLO(int R1){
-    cpu[R1] = cpu[trans.trans("$lo")];
+    cpu[R1] = cpu[33];
 };
 
 void CPU::NOP(){
@@ -514,15 +514,15 @@ void CPU::NOP(){
 };
 
 int CPU::SYSCALL(){
-    int command = cpu[trans.trans("$v0")];
+    int command = cpu[2];
     switch (command){
-        case 1:{int i; i = cpu[trans.trans("$a0")];std::cout << i; break;}
+        case 1:{int i; i = cpu[4];std::cout << i; break;}
         case 4: return 4;
-        case 5: {int i; std::cin >> i; cpu[trans.trans("$v0")] = i;break;}
+        case 5: {int i; std::cin >> i; cpu[2] = i;break;}
         case 8:return 8;
         case 9:return 9;
         case 10:exit(0);
-        case 17:exit(cpu[trans.trans("$a0")]);
+        case 17:exit(cpu[4]);
 
     }
     return -1;
