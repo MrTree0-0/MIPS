@@ -172,7 +172,7 @@ void program::EX(){
                 while(mem->mem[address] != '\0'){
                     std::cout << (char)mem->mem[address++];
                 }
-                std::cout << '\0';
+                //std::cout << '\0';
             } else
             if(judge == 9){
                 int len = dep->get_value(tran.trans("$a0"));
