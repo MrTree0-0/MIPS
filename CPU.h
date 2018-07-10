@@ -7,6 +7,7 @@
 #include "parser.h"
 #include "transfer.h"
 class CPU{
+    friend class program;
   private:
     int cpu[35] = {0};
     transfer trans;
@@ -247,8 +248,10 @@ void CPU::DIVU(int Re, int R1, int R2, int Imm){
 
 void CPU::DIV(int R1, int R2, int Imm){
     if(R2 >= 0){
+        std::cout << "fuck " << cpu[R1] << " " << cpu[R2] << std::endl;
         cpu[32] = cpu[R1] % cpu[R2];
         cpu[33] = cpu[R1] / cpu[R2];
+        std::cout << "shit" << cpu[32] << " " << cpu[33] << std::endl;
     }
     else{
         cpu[32] = cpu[R1] % Imm;
