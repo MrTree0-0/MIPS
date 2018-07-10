@@ -23,7 +23,7 @@ class program{
     int address;
     transfer tran;
     ScannerToken command;
-    //retransfer retran;
+    retransfer retran;
 
 
   public:
@@ -165,6 +165,7 @@ void program::EX(){
         {int judge = dep->SYSCALL();
             if(judge == 4){
                 int address = dep->get_value(4);
+                std::cout << address << std::endl;
                 while(mem->mem[address] != '\0'){
                     std::cout << (char)mem->mem[address++];
                 }
@@ -208,6 +209,7 @@ void program::run(){
         //cnt++;
         IF();
         ID();
+        std::cout << now_line << retran.retrans(op) << std::endl;
         EX();
         MA();
         WB();
