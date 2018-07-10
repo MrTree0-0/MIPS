@@ -8,7 +8,7 @@
 #include "parser.h"
 #include "scanner.h"
 #include "transfer.h"
-//#include "retranfer.h"
+#include "retranfer.h"
 #include "memory.h"
 #include <string>
 class program{
@@ -54,7 +54,7 @@ class program{
     EXMEM EXMEM_line;
     MEMWB MEMWB_line;
     int start;
-    //retransfer retran;
+    retransfer retran;
 
 
 
@@ -190,6 +190,7 @@ void program::ID() {
                 IDEX_line.valB = dep->cpu[IFID_line.command.R2];
             } else {
                 IDEX_line.valB = IFID_line.command.Imm;
+                //std::cout << "shit " << IDEX_line.valB << std::endl;
             }
             IDEX_line.Possible_Next_Line = IFID_line.command.address;
             break;
@@ -430,82 +431,45 @@ void program::EX() {
             brunch_cnt = 1;
             break;
         case BEQ:
-            if (IDEX_line.valB != 0) {
                 if (IDEX_line.valA == IDEX_line.valB) {
                     EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
                     brunch_cnt = 1;
                 }
-            } else {
-                if (IDEX_line.valA == IDEX_line.imm) {
-                    EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
-                    brunch_cnt = 1;
-                }
-            }
             break;
         case BNE:
-            if (IDEX_line.valB != 0) {
+            //if (IDEX_line.valB != 0) {
                 if (IDEX_line.valA != IDEX_line.valB) {
                     EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
                     brunch_cnt = 1;
                 }
-            } else {
-                if (IDEX_line.valA != IDEX_line.imm) {
-                    EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
-                    brunch_cnt = 1;
-                }
-            }
             break;
         case BGE:
-            if (IDEX_line.valB != 0) {
+            //if (IDEX_line.valB != 0) {
                 if (IDEX_line.valA >= IDEX_line.valB) {
                     EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
                     brunch_cnt = 1;
                 }
-            } else {
-                if (IDEX_line.valA >= IDEX_line.imm) {
-                    EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
-                    brunch_cnt = 1;
-                }
-            }
             break;
         case BLE: //dep->BLE(R1, R2, Imm, address); break;
-            if (IDEX_line.valB != 0) {
+            //if (IDEX_line.valB != 0) {
                 if (IDEX_line.valA <= IDEX_line.valB) {
                     EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
                     brunch_cnt = 1;
                 }
-            } else {
-                if (IDEX_line.valA <= IDEX_line.imm) {
-                    EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
-                    brunch_cnt = 1;
-                }
-            }
             break;
         case BGT: //dep->BGT(R1, R2, Imm, address); break;
-            if (IDEX_line.valB != 0) {
+            //if (IDEX_line.valB != 0) {
                 if (IDEX_line.valA > IDEX_line.valB) {
                     EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
                     brunch_cnt = 1;
                 }
-            } else {
-                if (IDEX_line.valA > IDEX_line.imm) {
-                    EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
-                    brunch_cnt = 1;
-                }
-            }
             break;
         case BLT: //dep->BLT(R1, R2, Imm, address); break;
-            if (IDEX_line.valB != 0) {
+            //if (IDEX_line.valB != 0) {
                 if (IDEX_line.valA < IDEX_line.valB) {
                     EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
                     brunch_cnt = 1;
                 }
-            } else {
-                if (IDEX_line.valA < IDEX_line.imm) {
-                    EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
-                    brunch_cnt = 1;
-                }
-            }
             break;
         case BEQZ:
             if (IDEX_line.valA == 0) {
