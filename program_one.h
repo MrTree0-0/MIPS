@@ -13,6 +13,9 @@
 #include <string>
 class program{
     friend class CPU;
+    enum STATE{
+         SNT, WNT, ST, WT
+    };
     struct IFID{
         int stop_or_not;
         ScannerToken command;
@@ -47,12 +50,13 @@ class program{
     Memory *mem;
     std::vector<ScannerToken> *text;
     int brunch_cnt;
-    int stop_read;
+    //int stop_read;
     IFID IFID_line;
     IDEX IDEX_line;
     EXMEM EXMEM_line;
     MEMWB MEMWB_line;
     //int start;
+    int statement;
     retransfer retran;
 
 
@@ -73,11 +77,28 @@ class program{
     void WB();
 
     void run();
+
+    int lower_statement(){
+        if(statement <=3 && statement > 0){
+            statement--;
+        }
+        if(statement == 1 || statement == 2) return 1;
+        return 0;
+    }
+
+    int upper_statement(){
+        if(statement <3 && statement >= 0){
+            statement++;
+        }
+        if(statement == 2 || statement == 1) return 1;
+        return 0;
+    }
 };
 
 program::program(CPU *c, Memory *m, std::vector<ScannerToken> *vec):dep(c), mem(m), text(vec)/*, op(0), Re(0), R1(0), R2(0), address(-1)*/{
+    statement = WT;
     brunch_cnt = 0;
-    stop_read = 0;
+    //stop_read = 0;
     IFID_line.Next_command_line = 0;
     IDEX_line.op = EXMEM_line.op = MEMWB_line.op = 0;
     IDEX_line.Next_command_line = IDEX_line.imm = IDEX_line.Rd = IDEX_line.Possible_Next_Line = IDEX_line.valA = IDEX_line.valB = 0;
@@ -97,11 +118,10 @@ program::program(program &p):dep(p.dep),mem(p.mem), text(p.text)/*, op(p.op), Re
 int program::IF(){
     int now_command_line;
     if(dep->lock_or_not(34)) return 1;
-
     now_command_line = dep->cpu[34]++;
               //std::cout << now_command_line << " shit" << std::endl;
     IFID_line.command = (*text)[now_command_line];
-    //std::cout << "IF: " << retran.retrans(IFID_line.command.op) << std::endl;
+    //std::cout << IFID_line.command.line_num << "IF: " << retran.retrans(IFID_line.command.op) << std::endl;
     IFID_line.Next_command_line = now_command_line + 1;
     return 0;
 }
@@ -176,7 +196,7 @@ int program::ID() {
         case B:
         case J:
             IDEX_line.Next_command_line = IFID_line.command.address;
-            dep->lock_reg(34);
+            //dep->lock_reg(34);
             break;
         case BEQ:
         case BNE:
@@ -192,7 +212,7 @@ int program::ID() {
                 IDEX_line.valB = IFID_line.command.Imm;
             }
             IDEX_line.Possible_Next_Line = IFID_line.command.address;
-            dep->lock_reg(34);
+            if(statement == WT || statement == ST)dep->lock_reg(34);
             break;
         case BEQZ:
         case BNEZ:
@@ -203,25 +223,25 @@ int program::ID() {
             if(dep->lock_or_not(IFID_line.command.R1)) return 1;
             IDEX_line.valA = dep->cpu[IFID_line.command.R1];
             IDEX_line.Possible_Next_Line = IFID_line.command.address;
-            dep->lock_reg(34);
+            if(statement == WT || statement == ST)dep->lock_reg(34);
             break;
         case JR:
             if(dep->lock_or_not(IFID_line.command.R1)) return 1;
             IDEX_line.Next_command_line = dep->cpu[IFID_line.command.R1];
-            dep->lock_reg(34);
+            //dep->lock_reg(34);
             break;
         case JAL:
             IDEX_line.valB = IFID_line.Next_command_line;
             IDEX_line.Next_command_line = IFID_line.command.address;
             dep->lock_reg(31);
-            dep->lock_reg(34);
+            //dep->lock_reg(34);
             break;
         case JALR:
             if(dep->lock_or_not(IFID_line.command.R1)) return 1;
             IDEX_line.valB = IFID_line.Next_command_line;
             IDEX_line.Next_command_line = dep->cpu[IFID_line.command.R1];
             dep->lock_reg(31);
-            dep->lock_reg(34);
+            //dep->lock_reg(34);
             break;
         case MOVE:
             if(dep->lock_or_not(IFID_line.command.R1)) return 1;
@@ -315,6 +335,7 @@ int program::EX() {
     EXMEM_line.dest = IDEX_line.Rd;
     EXMEM_line.Next_command_line = IDEX_line.Next_command_line;
     //std::cout << "EX: " << " " << retran.retrans(EXMEM_line.op) << std::endl;
+    int re;
     switch (EXMEM_line.op) {
         case ADD:EXMEM_line.result = IDEX_line.valA + IDEX_line.valB + IDEX_line.imm;
             break;
@@ -466,75 +487,119 @@ int program::EX() {
             break;
         case BEQ:
                 if (IDEX_line.valA == IDEX_line.valB) {
-                    EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
+                    EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;dep->cpu[34] = EXMEM_line.Next_command_line;
+                    re = upper_statement();
+                }else{
+                    re = lower_statement();
                 }
-            brunch_cnt = 1;
+            if(re) brunch_cnt = 1;
             break;
         case BNE:
                 if (IDEX_line.valA != IDEX_line.valB) {
-                    EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
+                    EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;dep->cpu[34] = EXMEM_line.Next_command_line;
+                    re = upper_statement();
+                }else{
+                    re = lower_statement();
                 }
-            brunch_cnt = 1;
+            if(re) brunch_cnt = 1;
             break;
         case BGE:
                 if (IDEX_line.valA >= IDEX_line.valB) {
-                    EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
+                    EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;dep->cpu[34] = EXMEM_line.Next_command_line;
+                    re = upper_statement();
+                } else{
+                    re = lower_statement();
                 }
-            brunch_cnt = 1;
+            if(re) brunch_cnt = 1;
             break;
         case BLE:
                 if (IDEX_line.valA <= IDEX_line.valB) {
-                    EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
+                    EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;dep->cpu[34] = EXMEM_line.Next_command_line;
+                    re = upper_statement();
+                } else{
+                    re = lower_statement();
                 }
-            brunch_cnt = 1;
+            if(re) brunch_cnt = 1;
             break;
         case BGT:
                 if (IDEX_line.valA > IDEX_line.valB) {
-                    EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
+                    EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;dep->cpu[34] = EXMEM_line.Next_command_line;
+                    re = upper_statement();
+                } else{
+                    re = lower_statement();
                 }
-            brunch_cnt = 1;
+            if(re) brunch_cnt = 1;
             break;
         case BLT:
                 if (IDEX_line.valA < IDEX_line.valB) {
                     EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
+                    dep->cpu[34] = EXMEM_line.Next_command_line;
+                    re = upper_statement();
+                } else{
+                    re = lower_statement();
                 }
-            brunch_cnt = 1;
+            if(re) brunch_cnt = 1;
             break;
         case BEQZ:
             if (IDEX_line.valA == 0) {
                 EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
+                dep->cpu[34] = EXMEM_line.Next_command_line;
+                //std::cout << "holy shit" << std::endl;
+                re = upper_statement();
+            } else{
+                re = lower_statement();
             }
-            brunch_cnt = 1;
+            if(re) brunch_cnt = 1;
             break;
         case BNEZ:
             if (IDEX_line.valA != 0) {
                 EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
+                dep->cpu[34] = EXMEM_line.Next_command_line;
+                re = upper_statement();
+            } else{
+                re = lower_statement();
             }
-            brunch_cnt = 1;
+            if(re) brunch_cnt = 1;
             break;
         case BLEZ:
             if (IDEX_line.valA <= 0) {
                 EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
+                dep->cpu[34] = EXMEM_line.Next_command_line;
+                re = upper_statement();
+            } else{
+                re = lower_statement();
             }
-            brunch_cnt = 1;
+            if(re) brunch_cnt = 1;
             break;
         case BGEZ:
             if (IDEX_line.valA >= 0) {
                 EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
+                dep->cpu[34] = EXMEM_line.Next_command_line;
+                re = upper_statement();
+            } else{
+                re = lower_statement();
             }
-            brunch_cnt = 1;
+            if(re) brunch_cnt = 1;
             break;
         case BLTZ:
             if (IDEX_line.valA < 0) {
                 EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
+                dep->cpu[34] = EXMEM_line.Next_command_line;
+                re = upper_statement();
+            } else{
+                re = lower_statement();
             }
-            brunch_cnt = 1;
+            if(re) brunch_cnt = 1;
             break;
         case BGTZ:
             if (IDEX_line.valA > 0) {
                 EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
+                dep->cpu[34] = EXMEM_line.Next_command_line;
+                re = upper_statement();
+            } else{
+                re = lower_statement();
             }
-            brunch_cnt = 1;
+            if(re) brunch_cnt = 1;
             break;
         case JR:
             brunch_cnt = 1;
@@ -577,8 +642,12 @@ int program::EX() {
     }
     if(brunch_cnt == 1){
         dep->cpu[34] = EXMEM_line.Next_command_line;
-        dep->unlock_reg(34);
+        IFID_line.stop_or_not = 1;
+        //dep->unlock_reg(34);
         brunch_cnt = 0;
+    }
+    if(dep->lock_or_not(34)){
+        dep->unlock_reg(34);
     }
     return 0;
 }
