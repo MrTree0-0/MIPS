@@ -12,11 +12,14 @@
 #include "memory.h"
 #include <string>
 class program{
+    friend class CPU;
     struct IFID{
+        int stop_or_not;
         ScannerToken command;
         int Next_command_line;
     };
     struct IDEX{
+        int stop_or_not;
         int Next_command_line;
         int valA, valB;
         int imm;
@@ -25,6 +28,7 @@ class program{
         int Possible_Next_Line;
     };
     struct EXMEM{
+        int stop_or_not;
         int Next_command_line;
         int result;
         int valB;
@@ -32,6 +36,7 @@ class program{
         int op;
     };
     struct MEMWB{
+        int stop_or_not;
         int result;
         int mdata;
         int dest;
@@ -42,18 +47,12 @@ class program{
     Memory *mem;
     std::vector<ScannerToken> *text;
     int brunch_cnt;
-    /*int now_line;
-    int op;
-    int Re, R1, R2, Imm;
-    std::string label;
-    int address;
-    transfer tran;
-    ScannerToken command;*/
+    int stop_read;
     IFID IFID_line;
     IDEX IDEX_line;
     EXMEM EXMEM_line;
     MEMWB MEMWB_line;
-    int start;
+    //int start;
     retransfer retran;
 
 
@@ -63,13 +62,13 @@ class program{
 
     program(program &p);
 
-    void IF();
+    int IF();
 
-    void ID();
+    int ID();
 
-    void EX();
+    int EX();
 
-    void MA();
+    int MA();
 
     void WB();
 
@@ -78,13 +77,13 @@ class program{
 
 program::program(CPU *c, Memory *m, std::vector<ScannerToken> *vec):dep(c), mem(m), text(vec)/*, op(0), Re(0), R1(0), R2(0), address(-1)*/{
     brunch_cnt = 0;
-    start = 0;
+    stop_read = 0;
     IFID_line.Next_command_line = 0;
     IDEX_line.op = EXMEM_line.op = MEMWB_line.op = 0;
     IDEX_line.Next_command_line = IDEX_line.imm = IDEX_line.Rd = IDEX_line.Possible_Next_Line = IDEX_line.valA = IDEX_line.valB = 0;
     EXMEM_line.Next_command_line = EXMEM_line.dest = EXMEM_line.result = EXMEM_line.valB = 0;
     MEMWB_line.result = MEMWB_line.dest = MEMWB_line.mdata = 0;
-
+    IFID_line.stop_or_not = IDEX_line.stop_or_not = EXMEM_line.stop_or_not = MEMWB_line.stop_or_not = 1;
 }
 
 program::program(program &p):dep(p.dep),mem(p.mem), text(p.text)/*, op(p.op), Re(p.Re), R1(p.R1), R2(p.R2)*/{
@@ -95,37 +94,23 @@ program::program(program &p):dep(p.dep),mem(p.mem), text(p.text)/*, op(p.op), Re
     MEMWB_line = p.MEMWB_line;
 }
 
-void program::IF(){
-    if(start){
-        if(brunch_cnt){
-            dep->cpu[34] = EXMEM_line.Next_command_line;
-            brunch_cnt = 0;
-        }
-        else{
-            dep->cpu[34]++;
-        }
-    }
-    else{
-        start = 1;
-    }
+int program::IF(){
     int now_command_line;
-    now_command_line = dep->cpu[34];
+    if(dep->lock_or_not(34)) return 1;
+
+    now_command_line = dep->cpu[34]++;
+              //std::cout << now_command_line << " shit" << std::endl;
     IFID_line.command = (*text)[now_command_line];
+    //std::cout << "IF: " << retran.retrans(IFID_line.command.op) << std::endl;
     IFID_line.Next_command_line = now_command_line + 1;
+    return 0;
 }
 
-void program::ID() {
-    /*op = command.op;
-    now_line = command.line_num;
-    Re = command.Re;
-    R1 = command.R1;
-    R2 = command.R2;
-    Imm = command.Imm;
-    label = command.label;
-    address = command.address;*/
+int program::ID() {
     IDEX_line.Next_command_line = IFID_line.Next_command_line;
     IDEX_line.op = IFID_line.command.op;
-    //std::cout << IFID_line.Next_command_line - 1 << retran.retrans(IDEX_line.op) << std::endl;
+    //std::cout << "ID: " << retran.retrans(IDEX_line.op) << std::endl;
+    //std::cout << retran.retrans(IDEX_line.op) << std::endl;
     switch (IDEX_line.op) {
         case ADD:
         case ADDU:
@@ -142,8 +127,10 @@ void program::ID() {
         case SLE:
         case SLT:
         case SNE:
+            if(dep->lock_or_not(IFID_line.command.R1) || ((IFID_line.command.R2 >= 0) && dep->lock_or_not(IFID_line.command.R2))) return 1;
             IDEX_line.valA = dep->cpu[IFID_line.command.R1];
             IDEX_line.Rd = IFID_line.command.Re;
+            dep->lock_reg(IDEX_line.Rd);
             if (IFID_line.command.R2 >= 0) {
                 IDEX_line.valB = dep->cpu[IFID_line.command.R2];
                 IDEX_line.imm = 0;
@@ -156,7 +143,15 @@ void program::ID() {
         case MULU:
         case DIV:
         case DIVU:
+            if(dep->lock_or_not(IFID_line.command.R1) || ((IFID_line.command.R2 >= 0) && dep->lock_or_not(IFID_line.command.R2))) return 1;
             IDEX_line.Rd = IFID_line.command.Re;//如果目标寄存器是0，那么说明我们要注入hi和lo
+            if(IDEX_line.Rd == 0){
+                dep->lock_reg(32);
+                dep->lock_reg(33);
+            }
+            else{
+                dep->lock_reg(IDEX_line.Rd);
+            }
             IDEX_line.valA = dep->cpu[IFID_line.command.R1];
             if (IFID_line.command.R2 >= 0) {
                 IDEX_line.valB = dep->cpu[IFID_line.command.R2];
@@ -168,16 +163,20 @@ void program::ID() {
             break;
         case NEG:
         case NEGU:
+            if(dep->lock_or_not(IFID_line.command.R1) || ((IFID_line.command.R2 >= 0) && dep->lock_or_not(IFID_line.command.R2))) return 1;
             IDEX_line.Rd = IFID_line.command.Re;
+            dep->lock_reg(IDEX_line.Rd);
             IDEX_line.valA = dep->cpu[IFID_line.command.R1];
             break;
         case LI:
             IDEX_line.Rd = IFID_line.command.Re;
+            dep->lock_reg(IDEX_line.Rd);
             IDEX_line.imm = IFID_line.command.Imm;
             break;
         case B:
         case J:
             IDEX_line.Next_command_line = IFID_line.command.address;
+            dep->lock_reg(34);
             break;
         case BEQ:
         case BNE:
@@ -185,14 +184,15 @@ void program::ID() {
         case BLE:
         case BGT:
         case BLT:
+            if(dep->lock_or_not(IFID_line.command.R1) || ((IFID_line.command.R2 >= 0) && dep->lock_or_not(IFID_line.command.R2))) return 1;
             IDEX_line.valA = dep->cpu[IFID_line.command.R1];
             if (IFID_line.command.R2 >= 0) {
                 IDEX_line.valB = dep->cpu[IFID_line.command.R2];
             } else {
                 IDEX_line.valB = IFID_line.command.Imm;
-                //std::cout << "shit " << IDEX_line.valB << std::endl;
             }
             IDEX_line.Possible_Next_Line = IFID_line.command.address;
+            dep->lock_reg(34);
             break;
         case BEQZ:
         case BNEZ:
@@ -200,49 +200,79 @@ void program::ID() {
         case BGEZ:
         case BLTZ:
         case BGTZ:
+            if(dep->lock_or_not(IFID_line.command.R1)) return 1;
             IDEX_line.valA = dep->cpu[IFID_line.command.R1];
             IDEX_line.Possible_Next_Line = IFID_line.command.address;
+            dep->lock_reg(34);
             break;
         case JR:
+            if(dep->lock_or_not(IFID_line.command.R1)) return 1;
             IDEX_line.Next_command_line = dep->cpu[IFID_line.command.R1];
+            dep->lock_reg(34);
             break;
         case JAL:
             IDEX_line.valB = IFID_line.Next_command_line;
             IDEX_line.Next_command_line = IFID_line.command.address;
+            dep->lock_reg(31);
+            dep->lock_reg(34);
             break;
-        case JALR:IDEX_line.valB = IFID_line.Next_command_line;
+        case JALR:
+            if(dep->lock_or_not(IFID_line.command.R1)) return 1;
+            IDEX_line.valB = IFID_line.Next_command_line;
             IDEX_line.Next_command_line = dep->cpu[IFID_line.command.R1];
+            dep->lock_reg(31);
+            dep->lock_reg(34);
             break;
         case MOVE:
+            if(dep->lock_or_not(IFID_line.command.R1)) return 1;
             IDEX_line.Rd = IFID_line.command.Re;
             IDEX_line.valB = dep->cpu[IFID_line.command.R1];
-        //std::cout << IDEX_line.Rd << " " << IDEX_line.valB << std::endl;
+            dep->lock_reg(IDEX_line.Rd);
             break;
         case MFHI:
+            if(dep->lock_or_not(32)) return 1;
             IDEX_line.Rd = IFID_line.command.R1;
             IDEX_line.valB = dep->cpu[32];
+            dep->lock_reg(IDEX_line.Rd);
             break;
         case MFLO:
+            if(dep->lock_or_not(33)) return 1;
             IDEX_line.Rd = IFID_line.command.R1;
             IDEX_line.valB = dep->cpu[33];
+            dep->lock_reg(IDEX_line.Rd);
             break;
         case NOP:
             break;
         case SYSCALL: {
+            if(dep->lock_or_not(2)) {
+                //std::cout << "holy shit" << std::endl;
+                return 1;
+            }
             IDEX_line.imm = dep->cpu[2];
             switch (IDEX_line.imm) {
-                case 1:IDEX_line.valA = dep->cpu[4];
+                case 1:
+                    if(dep->lock_or_not(4)) return 1;
+                    IDEX_line.valA = dep->cpu[4];
                     break;
-                case 4:IDEX_line.valA = dep->cpu[4];
+                case 4:
+                    if(dep->lock_or_not(4)) return 1;
+                    IDEX_line.valA = dep->cpu[4];
                     break;
-                case 5:break;
-                case 8:IDEX_line.valA = dep->cpu[4];
+                case 5:dep->lock_reg(2);break;
+                case 8:
+                    if(dep->lock_or_not(4) || dep->lock_or_not(5)) return 1;
+                    IDEX_line.valA = dep->cpu[4];
                     IDEX_line.valB = dep->cpu[5];
                     break;
-                case 9:IDEX_line.valA = dep->cpu[4];
+                case 9:
+                    if(dep->lock_or_not(4)) return 1;
+                    IDEX_line.valA = dep->cpu[4];
+                    dep->lock_reg(2);
                     break;
                 case 10:exit(0);
-                case 17:exit(dep->cpu[4]);
+                case 17:
+                    if(dep->lock_or_not(4)) return 1;
+                    exit(dep->cpu[4]);
             }
             break;
         }
@@ -252,18 +282,22 @@ void program::ID() {
         case LA:
             IDEX_line.Rd = IFID_line.command.R1;
             if (IFID_line.command.address == -1) {
+                if(dep->lock_or_not(IFID_line.command.R2)) return 1;
                 IDEX_line.valB = dep->cpu[IFID_line.command.R2];
                 IDEX_line.imm = IFID_line.command.Imm;
             } else {
                 IDEX_line.valB = 0;
                 IDEX_line.imm = IFID_line.command.address;
             }
+            dep->lock_reg(IDEX_line.Rd);
             break;
         case SB:
         case SH:
         case SW:
+            if(dep->lock_or_not(IFID_line.command.R1)) return 1;
             IDEX_line.Rd = dep->cpu[IFID_line.command.R1];
             if (IFID_line.command.address == -1) {
+                if(dep->lock_or_not(IFID_line.command.R2)) return 1;
                 IDEX_line.valB = dep->cpu[IFID_line.command.R2];
                 IDEX_line.imm = IFID_line.command.Imm;
             } else {
@@ -272,14 +306,15 @@ void program::ID() {
             }
             break;
     }
-
+    return 0;
 }
 
-void program::EX() {
+int program::EX() {
     EXMEM_line.op = IDEX_line.op;
     EXMEM_line.valB = IDEX_line.valB;
     EXMEM_line.dest = IDEX_line.Rd;
     EXMEM_line.Next_command_line = IDEX_line.Next_command_line;
+    //std::cout << "EX: " << " " << retran.retrans(EXMEM_line.op) << std::endl;
     switch (EXMEM_line.op) {
         case ADD:EXMEM_line.result = IDEX_line.valA + IDEX_line.valB + IDEX_line.imm;
             break;
@@ -341,7 +376,6 @@ void program::EX() {
             }
             break;
         case DIV:
-        //std::cout << "fuck " <<  IDEX_line.valA << " " << IDEX_line.valB << std::endl;
             EXMEM_line.result = IDEX_line.valA / (IDEX_line.valB + IDEX_line.imm);
             EXMEM_line.valB = IDEX_line.valA % (IDEX_line.valB + IDEX_line.imm);
             break;
@@ -433,79 +467,74 @@ void program::EX() {
         case BEQ:
                 if (IDEX_line.valA == IDEX_line.valB) {
                     EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
-                    brunch_cnt = 1;
                 }
+            brunch_cnt = 1;
             break;
         case BNE:
-            //if (IDEX_line.valB != 0) {
                 if (IDEX_line.valA != IDEX_line.valB) {
                     EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
-                    brunch_cnt = 1;
                 }
+            brunch_cnt = 1;
             break;
         case BGE:
-            //if (IDEX_line.valB != 0) {
                 if (IDEX_line.valA >= IDEX_line.valB) {
                     EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
-                    brunch_cnt = 1;
                 }
+            brunch_cnt = 1;
             break;
-        case BLE: //dep->BLE(R1, R2, Imm, address); break;
-            //if (IDEX_line.valB != 0) {
+        case BLE:
                 if (IDEX_line.valA <= IDEX_line.valB) {
                     EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
-                    brunch_cnt = 1;
                 }
+            brunch_cnt = 1;
             break;
-        case BGT: //dep->BGT(R1, R2, Imm, address); break;
-            //if (IDEX_line.valB != 0) {
+        case BGT:
                 if (IDEX_line.valA > IDEX_line.valB) {
                     EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
-                    brunch_cnt = 1;
                 }
+            brunch_cnt = 1;
             break;
-        case BLT: //dep->BLT(R1, R2, Imm, address); break;
-            //if (IDEX_line.valB != 0) {
+        case BLT:
                 if (IDEX_line.valA < IDEX_line.valB) {
                     EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
-                    brunch_cnt = 1;
                 }
+            brunch_cnt = 1;
             break;
         case BEQZ:
             if (IDEX_line.valA == 0) {
                 EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
-                brunch_cnt = 1;
             }
+            brunch_cnt = 1;
             break;
         case BNEZ:
             if (IDEX_line.valA != 0) {
                 EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
-                brunch_cnt = 1;
             }
+            brunch_cnt = 1;
             break;
         case BLEZ:
             if (IDEX_line.valA <= 0) {
                 EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
-                brunch_cnt = 1;
             }
+            brunch_cnt = 1;
             break;
         case BGEZ:
             if (IDEX_line.valA >= 0) {
                 EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
-                brunch_cnt = 1;
             }
+            brunch_cnt = 1;
             break;
         case BLTZ:
             if (IDEX_line.valA < 0) {
                 EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
-                brunch_cnt = 1;
             }
+            brunch_cnt = 1;
             break;
         case BGTZ:
             if (IDEX_line.valA > 0) {
                 EXMEM_line.Next_command_line = IDEX_line.Possible_Next_Line;
-                brunch_cnt = 1;
             }
+            brunch_cnt = 1;
             break;
         case JR:
             brunch_cnt = 1;
@@ -546,13 +575,20 @@ void program::EX() {
             }
             break;
     }
+    if(brunch_cnt == 1){
+        dep->cpu[34] = EXMEM_line.Next_command_line;
+        dep->unlock_reg(34);
+        brunch_cnt = 0;
+    }
+    return 0;
 }
 
 
-void program::MA(){
+int program::MA(){
     MEMWB_line.result = EXMEM_line.result;
     MEMWB_line.dest = EXMEM_line.dest;
     MEMWB_line.op = EXMEM_line.op;
+    //std::cout << "MA: " << retran.retrans(MEMWB_line.op) << std::endl;
     switch(MEMWB_line.op){
         case MUL:
         case MULU:
@@ -583,7 +619,6 @@ void program::MA(){
                 case 4:
                 {
                     int address = EXMEM_line.valB;
-                    //std::cout << address << std::endl;
                     while(mem->mem[address] != '\0'){
                         std::cout << (char)mem->mem[address++];
                     }
@@ -609,11 +644,12 @@ void program::MA(){
                 }
             }
             break;
-
     }
+    return 0;
 }
 
 void program::WB(){
+    //std::cout << "WB: " << retran.retrans(MEMWB_line.op) << std::endl;
     switch(MEMWB_line.op){
         case ADD:
         case SUB:
@@ -621,26 +657,32 @@ void program::WB(){
         case SUBU:
         case ADDU:
             dep->cpu[MEMWB_line.dest] = MEMWB_line.result;
+            dep->unlock_reg(MEMWB_line.dest);
             break;
         case MUL:
         case MULU:
             if(MEMWB_line.dest == 0){
                 dep->cpu[33] = MEMWB_line.result;
                 dep->cpu[32] = MEMWB_line.mdata;
+                dep->unlock_reg(33);
+                dep->unlock_reg(32);
             }
             else{
                 dep->cpu[MEMWB_line.dest] = MEMWB_line.result;
+                dep->unlock_reg(MEMWB_line.dest);
             }
             break;
         case DIV:
         case DIVU:
             if(MEMWB_line.dest == 0){
-                //std::cout << "shit" << " " << MEMWB_line.mdata << " " << MEMWB_line.result << std::endl;
                 dep->cpu[33] = MEMWB_line.result;
                 dep->cpu[32] = MEMWB_line.mdata;
+                dep->unlock_reg(33);
+                dep->unlock_reg(32);
             }
             else{
                 dep->cpu[MEMWB_line.dest] = MEMWB_line.result;
+                dep->unlock_reg(MEMWB_line.dest);
             }
             break;
         case XOR:
@@ -657,8 +699,8 @@ void program::WB(){
         case SNE:
         case LI:
         case LA:
-        //std::cout << MEMWB_line.result << std::endl;
             dep->cpu[MEMWB_line.dest] = MEMWB_line.result;
+            dep->unlock_reg(MEMWB_line.dest);
             break;
         case J:
         case B:
@@ -678,15 +720,17 @@ void program::WB(){
             break;
         case JAL:
             dep->cpu[31] = MEMWB_line.result;
+            dep->unlock_reg(31);
             break;
         case JALR:
             dep->cpu[31] = MEMWB_line.result;
+            dep->unlock_reg(31);
             break;
         case LB:
         case LH:
         case LW:
-        //std::cout << MEMWB_line.mdata << std::endl;
             dep->cpu[MEMWB_line.dest] = MEMWB_line.mdata;
+            dep->unlock_reg(MEMWB_line.dest);
             break;
         case SB:
         case SH:
@@ -696,20 +740,22 @@ void program::WB(){
         case MFHI:
         case MFLO:
             dep->cpu[MEMWB_line.dest] = MEMWB_line.result;
+            dep->unlock_reg(MEMWB_line.dest);
             break;
         case NOP:
             break;
         case SYSCALL:
-            EXMEM_line.dest = IDEX_line.imm;
-            switch (IDEX_line.imm) {
+            switch (MEMWB_line.dest) {
                 case 5:{
                     int i;
                     std::cin >> i;
                     dep->cpu[2] = i;
+                    dep->unlock_reg(2);
                     break;
                 }
                 case 9:
                     dep->cpu[2] = MEMWB_line.mdata;
+                    dep->unlock_reg(2);
                     break;
             }
             break;
@@ -717,20 +763,42 @@ void program::WB(){
 }
 
 void program::run(){
-    int cnt = 0;
+    //int cnt = 0;
     while(true){
-        cnt++;
-        /*WB();
-        MA();
-        EX();
+        //cnt++;
+        if(MEMWB_line.stop_or_not){
+            MEMWB_line.stop_or_not = 0;
+        }
+        else WB();
+        if(EXMEM_line.stop_or_not){
+            EXMEM_line.stop_or_not = 0;
+            MEMWB_line.stop_or_not = 1;
+        }
+        else MA();
+        if(IDEX_line.stop_or_not){
+            IDEX_line.stop_or_not = 0;
+            EXMEM_line.stop_or_not = 1;
+        }
+        else EX();
+        if(IFID_line.stop_or_not){
+            IFID_line.stop_or_not = 0;
+            IDEX_line.stop_or_not = 1;
+        }
+        else {
+            if(ID()){
+                IDEX_line.stop_or_not = 1;
+                continue;
+            }
+        }
+        if(IF()){
+            IFID_line.stop_or_not = 1;
+        }
+        //if(cnt > 10)break;
+        /*IF();
         ID();
-        IF();*/
-        //if(cnt > 500)break;
-        IF();
-        ID();
         EX();
         MA();
-        WB();
+        WB();*/
     }
 }
 

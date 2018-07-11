@@ -10,9 +10,22 @@ class CPU{
     friend class program;
   private:
     int cpu[35] = {0};
+    int used[35] = {0};
     transfer trans;
 
   public:
+    void lock_reg(int n){
+        used[n]++;
+    }
+
+    void unlock_reg(int n){
+        used[n]--;
+    }
+
+    bool lock_or_not(int n){
+        return used[n];
+    }
+
     inline void ADD(int Re, int R1, int R2, int Imm);
 
     inline void ADDU(int Re, int R1, int R2, int Imm);
