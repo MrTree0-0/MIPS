@@ -16,7 +16,7 @@ class autobranch{
     int n;
 
   public:
-    autobranch(int num = 5){
+    autobranch(int num = 25){
         n = num;
         st = new int[1<<n];
         std::memset(st, 0, (1<<n) * sizeof(int));
