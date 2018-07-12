@@ -43,14 +43,14 @@ class autobranch{
 
     bool upper_statment(int &i){
         if(i < 3) i++;
-        if(i == 2 || i == 1) return false;
-        else return true;
+        if(i == 2 || i == 1) return true;
+        else return false;
     }
 
     bool lower_statement(int &i){
         if(i >= 1) i--;
-        if(i == 1 || i == 2) return false;
-        return true;
+        if(i == 1 || i == 2) return true;
+        return false;
     }
     int change_st(int i){
         int re;
